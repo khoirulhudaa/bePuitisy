@@ -1,45 +1,37 @@
-const Email = require('../models/emaiModel')
+const User = require('../models/authModel')
 const nodemailer = require('nodemailer')
+const jwt = require('jsonwebtoken');
 const path = require('path')
 const fs = require('fs')
-const crypto = require('crypto')
-
-const addNewEmail = async (req, res) => {
-    try {
-        const { email } = req.body
-
-        const tokenRandom = crypto.randomBytes(5).toString('hex')
-
-        const newEmail = new Email({
-            email_id: tokenRandom,
-            email,
-        })
-
-        await newEmail.save()
-        return res.json({ status: 200, message: 'Berhasil kirim email!' })
-
-    } catch (error) {
-        return res.json({ status: 500, message: 'Proses gagal!', error: error });
-    }
-}
 
 const createMessageEmailAllUser = async (req,res) => {
     try {
 
-        const { subject, message } = req.body
-        const emails = await Email.find()
+       console.log(req.body.email)
+       const user = await User.findOne({ email: req.body.email });
 
-        const transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: 'muhammadkhoirulhuda111@gmail.com',
-                pass: 'pwdi hnbx usqq xwnh'
+       if (!user) {
+           return res.json({ status: 404, message: 'Account not available!' });
+       }
+
+       console.log(0)
+       const token = jwt.sign({ email: user.email }, 'puitisy', { expiresIn: '1h' });
+       console.log(1)
+       const transporter = nodemailer.createTransport({
+           service: 'Gmail',
+           auth: {
+               user: 'puitisy@gmail.com',
+               pass: 'nfyx aarf edgi htum'
             }
         })
+        console.log(2)
         
         const cssPath = path.join(__dirname, '../styles/style.css');
         const cssStyles = fs.readFileSync(cssPath, 'utf8');
+        console.log(3)
         
+        const resetUrl = `http://localhost:3000/reset-password/${token}`; // Sesuaikan dengan URL reset password
+        console.log(4)
         const emailContent = `
             <!DOCTYPE html>
             <html lang="en">
@@ -53,24 +45,34 @@ const createMessageEmailAllUser = async (req,res) => {
                 </head>
                 <body>
                     <div class="container">
-                        <h2>ecousantara - ${new Date().getFullYear()}!</h2>
+                        <h2>Reset Your Password</h2>
+                        <p>Hi there,</p>
+                        <p>You requested a password reset. Please click the button below to reset your password:</p>
+                        <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; margin: 20px 0; color: white; background-color: #007bff; text-decoration: none; border-radius: 5px;">Reset Password</a>
+                        <p>If you did not request a password reset, please ignore this email.</p>
                         <br />
-                        <div className='custom-content' dangerouslySetInnerHTML={{ __html: ${message} }}></div>
+                        <p>Thank you,</p>
+                        <p>Your Company Team</p>
                     </div>
                 </body>
             </html>
         `;
-  
+
+        console.log(5)
+        
         const mailOptions = {
-            to: emails.map(data => data.email).join(','),
-            from: 'ecoNusantara111@gmail.com',
-            subject: subject,
+            to: req.body.email,
+            from: 'puitisy@gmail.com',
+            subject: "Reset-password",
             html: emailContent
         }
+        console.log(6)
   
         transporter.sendMail(mailOptions, async (err) => {
             if(err) return res.json({ status: 500, message: 'Gagal kirim email saat transfer!', error: err })
-            
+                
+            user.tokenResetPassword = token;
+            await user.save();            
             return res.json({ status: 200, message: 'Berhasil Kirim Pesan!' })
         })
     } catch (error) {
@@ -78,34 +80,6 @@ const createMessageEmailAllUser = async (req,res) => {
     }
 }
 
-const getAllEmail = async (req, res) => {
-    try {
-        const existEmail = await Email.find()
-        
-        if(!existEmail) return res.json({ status: 404, message: 'Email belum ada!' })
-
-        return res.json({ status: 200, message: 'Berhasil ambil email', data: existEmail })
-    } catch (error) {
-        return res.json({ status: 500, message: 'Proses gagal!', error: error });
-    }
-}
-
-const removeEmailUser = async (req, res) => {
-    try {
-        const { email_id } = req.params
-
-        const existEmail = await Email.findOneAndDelete({ email_id })
-        if(!existEmail) return res.json({ status: 404, message: 'Email tidak ada!' })
-        
-        return res.json({ status: 200, message: 'Berhasil hapus data!', data: existEmail })
-    } catch (error) {
-        return res.json({ status: 500, message: 'Proses gagal!', error: error });
-    }
-}
-
 module.exports = {
     createMessageEmailAllUser,
-    getAllEmail,
-    removeEmailUser,
-    addNewEmail
 }

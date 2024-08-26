@@ -12,13 +12,9 @@ app.use(cors())
 const portServer = process.env.PORT_SERVER_RUNNING
 
 // Connected on database ft mongodb
-mongoose.connect(process.env.URL_MONGOOSE, { useNewUrlParser: true, useUnifiedTopology: true })
-.then(() => {
-    console.log('Successfully connect on database')
-})
-.catch((error) => {
-    console.log(error)
-})
+mongoose.connect(process.env.URL_MONGOOSE)
+.then(() => console.log('Mongoose connected to DB'))
+.catch((err) => console.error('Mongoose connection error:', err));
 
 // Middleware untuk mengatur timeout
 app.use((req, res, next) => {
@@ -37,12 +33,14 @@ const checkToken = require('./middlewares/verifyToken')
 // Routers
 const accountRouter = require('./routers/accountRouter')
 
-const culinaryRouter = require('./routers/culinaryRouter')
+const poetryRouter = require('./routers/poetryRouter')
 const emailRouter = require('./routers/emailRouter')
+const bookRouter = require('./routers/bookRouter')
 
 app.use('/account', accountRouter)
-app.use('/culinary', checkToken, culinaryRouter)
-app.use('/email', checkToken, emailRouter)
+app.use('/poetry', checkToken, poetryRouter)
+app.use('/book', checkToken, bookRouter)
+app.use('/email', emailRouter)
 
 app.get('/test', (req, res) => {
     res.send('test success!')   

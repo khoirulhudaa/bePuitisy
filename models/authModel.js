@@ -5,7 +5,7 @@ const authModel = new mongoose.Schema({
         type: String,
         required: true
     },
-    username: {
+    penName: {
         type: String,
         required: true
     },
@@ -15,11 +15,39 @@ const authModel = new mongoose.Schema({
     },
     role: {
         type: String,
-        default: 'super-sub-admin'
+        default: 'writer'
     },  
     password: {
         type: String,
         required: true
+    },
+    bionarasi: {
+        type: String,
+        default: '-'
+    },
+    instagram: {
+        type: String,
+        default: '-'
+    },
+    year: {
+        type: String,
+        default: '-'
+    },
+    gender: {
+        type: String,
+        default: '-'
+    },
+    avatar: {
+        type: String,
+        default: 'default'
+    },
+    country: {
+        type: String,
+        default: 'Indonesia'
+    },
+    tokenResetPassword: {
+        type: String,
+        default: '-'
     },
     created_at: {
         type: Date,
