@@ -51,6 +51,23 @@ const getAllPoetry = async (req, res) => {
   }
 };
 
+const getAllPoetryByAuthorId = async (req, res) => {
+  try {
+    const { authorId } = req.params;
+
+    // Retrieve all poetry records
+    const poetryList = await PoetryModel.find({ authorId });
+    
+    if (poetryList.length === 0) {
+      return res.json({ status: 404, message: 'No poetry data found!' });
+    }
+
+    return res.json({ status: 200, message: 'Successfully retrieved poetry data', data: poetryList });
+  } catch (error) {
+    return res.json({ status: 500, message: 'Failed to retrieve poetry data!', error: error.message });
+  }
+};
+
 const getAllPoetryByBookId = async (req, res) => {
   try {
     const { book_id } = req.params;
@@ -145,6 +162,7 @@ module.exports = {
   createPoetry,
   getAllPoetry,
   getAllPoetryByBookId,
+  getAllPoetryByAuthorId,
   updatePoetry,
   removePoetry,
   removePoetryByBookId,
